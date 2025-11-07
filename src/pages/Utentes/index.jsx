@@ -69,7 +69,7 @@ function Utentes() {
         await api.put(`/utentes/${editando}`, dadosParaEnviar);
         setSucesso("Utente atualizado!");
       } else {
-        await api.post("/utentes/criar", dadosParaEnviar);
+        await api.post("/utentes/", dadosParaEnviar);
         setSucesso("Utente criado!");
       }
       limparForm();
@@ -224,7 +224,7 @@ function Utentes() {
                 <div className="card-header">
                   <h3>{u.nome}</h3>
                   <span className={`sexo ${u.sexo}`}>
-                    {u.sexo === "M" ? "👨" : "👩"}
+                    {u.sexo === "M" ? "👩" : "👨"}
                   </span>
                 </div>
                 <div className="card-body">

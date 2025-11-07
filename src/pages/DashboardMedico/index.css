@@ -211,6 +211,18 @@
   color: #7f8c8d;
 }
 
+.triagem-card.risco-alto {
+  background: #ffebee;
+  border-left: 5px solid #c62828;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.triagem-card.risco-alto strong {
+  color: #b71c1c;
+}
+
 @media (max-width: 768px) {
   .stats-grid, .secoes {
     grid-template-columns: 1fr;
@@ -218,3 +230,4 @@
   .header { flex-direction: column; gap: 15px; }
   .consulta-card { flex-direction: column; align-items: flex-start; }
 }
+

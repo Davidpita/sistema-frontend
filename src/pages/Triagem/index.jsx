@@ -4,6 +4,7 @@ import api from "../../services/api";
 import "./index.css";
 
 function Triagem() {
+const [triagensList, setTriagensList] = useState([]);
   const [utentes, setUtentes] = useState([]);
   const [buscaContacto, setBuscaContacto] = useState("");
   const [utenteSelecionado, setUtenteSelecionado] = useState(null);
@@ -24,7 +25,19 @@ function Triagem() {
   // Carregar utentes
   useEffect(() => {
     carregarUtentes();
+    carregarTriagens();
+    carregarUtentes();
   }, []);
+
+  const carregarTriagens = async () => {
+  try {
+    const res = await api.get('/triagens'); // rota do backend
+    setTriagensList(res.data); // assume que backend retorna array direto
+  } catch (err) {
+    console.error('Erro ao carregar triagens:', err);
+    setErro('Não foi possível carregar triagens');
+  }
+};
 
   const carregarUtentes = async () => {
     try {
@@ -141,6 +154,16 @@ function Triagem() {
     } finally {
       setLoading(false);
     }
+    await api.post("/triagens", {
+  utenteId: utenteSelecionado.id,
+  respostasJson: JSON.stringify(respostas),
+  resultado,
+  recomendacao,
+});
+
+// Recarregar lista de triagens
+carregarTriagens();
+
   };
 
   const limparTriagem = () => {
@@ -426,6 +449,34 @@ function Triagem() {
           </div>
         </form>
       )}
+      <div className="lista-triagens">
+  <h2>Triagens Realizadas</h2>
+  {triagensList.length === 0 ? (
+    <p>Nenhuma triagem registrada.</p>
+  ) : (
+    <table>
+      <thead>
+        <tr>
+          <th>Utente</th>
+          <th>Resultado</th>
+          <th>Recomendação</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        {triagensList.map(t => (
+          <tr key={t.id}>
+            <td>{t.utente?.nome}</td>
+            <td>{t.resultado}</td>
+            <td>{t.recomendacao}</td>
+            <td>{new Date(t.data).toLocaleString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
+
     </div>
   );
 }

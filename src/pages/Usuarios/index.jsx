@@ -20,7 +20,7 @@ function Usuarios() {
   const carregarUsuarios = async () => {
     try {
       const res = await api.get('/usuarios');
-      setUsuarios(res.data);
+      setUsuarios(res.data.usuarios);
     } catch (err) {
       setErro('Erro ao carregar usuários');
     }

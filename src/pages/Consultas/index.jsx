@@ -29,8 +29,8 @@ function Consultas() {
   // CARREGAR MÉDICOS DO BACKEND
   const carregarMedicos = async () => {
     try {
-      const res = await api.get("/medicos");
-      setMedicos(res.data);
+      const res = await api.get("/usuarios/medico");
+      setMedicos(res.data || res.data);
     } catch (err) {
       console.error("Erro ao carregar médicos", err);
       setMedicos([]);
@@ -40,30 +40,40 @@ function Consultas() {
   const carregarUtentes = async () => {
     try {
       const res = await api.get("/utentes");
-      setUtentes(res.data);
+      setUtentes(res.data.utentes || res.data);
     } catch (err) {
       setErro("Erro ao carregar utentes");
     }
   };
 
-  const carregarConsultasHoje = async () => {
-    try {
-      const res = await api.get("/dashboard/consultas/hoje");
-      setConsultasHoje(res.data.consultas || []);
-    } catch (err) {
-      console.error("Erro ao carregar consultas de hoje", err);
-      setConsultasHoje([]);
-    }
-  };
+const carregarConsultasHoje = async () => {
+  try {
+    const res = await api.get("/consultas/hoje");
+
+    const consultas =
+      Array.isArray(res.data.consultas)
+        ? res.data.consultas
+        : Array.isArray(res.data)
+        ? res.data
+        : [];
+
+    setConsultasHoje(consultas);
+  } catch (err) {
+    console.error("Erro ao carregar consultas de hoje", err);
+    setConsultasHoje([]);
+  }
+};
 
   const carregarTriagensDoUtente = async (utenteId) => {
     try {
       const res = await api.get(`/triagens/utente/${utenteId}`);
-      setTriagens(res.data);
+      setTriagens(res.data || []);
     } catch (err) {
+      console.error("Erro ao carregar triagens", err);
       setTriagens([]);
     }
   };
+
 
   const utentesFiltrados = utentes.filter((u) =>
     u.contacto?.includes(buscaContacto)

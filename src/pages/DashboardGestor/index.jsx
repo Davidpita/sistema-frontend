@@ -47,23 +47,41 @@ function DashboardGestor() {
           resEstatisticas,
           resTriagensZona,
         ] = await Promise.all([
-          api.get("/dashboard/utentes/total"),
-          api.get("/dashboard/consultas/hoje"),
-          api.get("/dashboard/triagens/hoje"),
-          api.get("/dashboard/usuarios/medicos"),
-          api.get("/dashboard/consultas/estatisticas"),
-          api.get("/dashboard/triagens/por-zona"),
+          api.get("/utentes/total"),
+          api.get("/consultas/hoje"),
+          api.get("/triagens/today"),
+          api.get("/usuarios/medicos"),
+          api.get("/consultas/estatisticas"),
+          api.get("/triagens/por-zona"),
         ]);
 
         setStats({
-          utentes: resUtentes.data.total,
-          consultasHoje: resConsultasHoje.data.consultas?.length || 0, // CORRIGIDO
-          triagensHoje: resTriagensHoje.data.total || 0, // CORRIGIDO
-          medicos: resMedicos.data.total || 0,
+          utentes: resUtentes.data.totalUtentes || 0,
+          consultasHoje: resConsultasHoje.data.totalConsultas || resConsultasHoje.data.consultas?.length || 0,
+          triagensHoje: resTriagensHoje.data.totalTriagens || resTriagensHoje.data.total || 0,
+          medicos: resMedicos.data.totalMedicos || resMedicos.data.total || 0,
         });
 
-        setConsultasSemana(resEstatisticas.data || []);
-        setTriagensZona(resTriagensZona.data || []);
+          setConsultasSemana(
+        resEstatisticas.data.map((c) => ({
+          ...c,
+          // converte para objeto Date válido
+          dataFormatada: new Date(c.data).toLocaleDateString("pt-MZ"),
+        }))
+      );
+
+       setTriagensZona(
+        resTriagensZona.data.map((zona) => {
+          const totalTriagens = zona.utentes.reduce(
+            (acc, utente) => acc + (utente.triagens?.length || 0),
+            0
+          );
+          return {
+            nome: zona.nome,
+            total: totalTriagens,
+          };
+        })
+      );
       } catch (err) {
         setError("Erro ao carregar dados do dashboard");
         console.error(err);
@@ -75,38 +93,36 @@ function DashboardGestor() {
     fetchData();
   }, []);
 
-  const chartConsultas = {
-    labels: consultasSemana.map((c) =>
-      new Date(c.data).toLocaleDateString("pt-MZ")
-    ),
-    datasets: [
-      {
-        label: "Consultas",
-        data: consultasSemana.map((c) => c.total),
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
-        borderColor: "rgba(54, 162, 235, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
+const chartConsultas = {
+  labels: consultasSemana.map((c) => c.dataFormatada || "Data inválida"),
+  datasets: [
+    {
+      label: "Consultas",
+      data: consultasSemana.map((c) => c.total || 0),
+      backgroundColor: "rgba(54, 162, 235, 0.6)",
+      borderColor: "rgba(54, 162, 235, 1)",
+      borderWidth: 1,
+    },
+  ],
+};
 
   const chartTriagens = {
-    labels: triagensZona.map((t) => t.zona),
-    datasets: [
-      {
-        label: "Triagens",
-        data: triagensZona.map((t) => t.total),
-        backgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#FF9F40",
-        ],
-      },
-    ],
-  };
+  labels: triagensZona.map((t) => t.nome || "Sem nome"),
+  datasets: [
+    {
+      label: "Triagens",
+      data: triagensZona.map((t) => t.total || 0),
+      backgroundColor: [
+        "#FF6384",
+        "#36A2EB",
+        "#FFCE56",
+        "#4BC0C0",
+        "#9966FF",
+        "#FF9F40",
+      ],
+    },
+  ],
+};
 
   if (loading)
     return <div className="dashboard-loading">Carregando dashboard...</div>;

@@ -31,7 +31,7 @@ function DashboardProfissional() {
     const carregarDados = async () => {
       try {
         // 1. TRIAGENS DE HOJE
-        const resTriagens = await api.get("/dashboard/triagens/hoje");
+        const resTriagens = await api.get("/triagens/hoje");
         const triagens = Array.isArray(resTriagens.data) ? resTriagens.data : [];
         
         const minhasTriagens = triagens.filter(t => 

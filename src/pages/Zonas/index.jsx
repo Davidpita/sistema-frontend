@@ -109,7 +109,6 @@ function Zonas() {
             {zonas.map(z => (
               <div key={z.id} className="zona-card">
                 <h3>{z.nome}</h3>
-                {z.coordenadas && <p><strong>Coord:</strong> {z.coordenadas}</p>}
                 <div className="card-actions">
                   <button onClick={() => editarZona(z)} className="btn-edit">Editar</button>
                   <button onClick={() => excluirZona(z.id)} className="btn-delete">Excluir</button>

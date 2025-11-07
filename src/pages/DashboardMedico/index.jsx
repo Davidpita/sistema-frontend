@@ -29,35 +29,38 @@ function DashboardMedico() {
     const carregarDados = async () => {
       try {
         // 1. CONSULTAS DE HOJE
-        const resConsultas = await api.get("/dashboard/consultas/hoje");
+        const resConsultas = await api.get("/consultas/hoje");
         const todasConsultas = resConsultas.data.consultas || [];
-        
-        const minhasConsultas = todasConsultas.filter(
-          c => c.profissionalId === usuario.id
-        );
+        const totalConsultasHoje = resConsultas.data.totalConsultasHoje || todasConsultas.length || 0;
 
-        setConsultasHoje(minhasConsultas);
-        setStats(prev => ({
-          ...prev,
-          consultasHoje: minhasConsultas.length,
-          consultasPendentes: minhasConsultas.filter(c => !c.realizada).length,
-          pacientesAtendidos: minhasConsultas.filter(c => c.realizada).length,
-        }));
+        const minhasConsultas = todasConsultas.filter(
+        c => c.profissionalId === usuario.id
+      );
+
+      setConsultasHoje(minhasConsultas);
+      setStats(prev => ({
+        ...prev,
+        consultasHoje: minhasConsultas.length,
+        consultasPendentes: minhasConsultas.filter(c => !c.realizada).length,
+        pacientesAtendidos: minhasConsultas.filter(c => c.realizada).length,
+      }));
+
 
         // 2. TRIAGENS RECENTES (últimas 5 com resultado ATENÇÃO/URGÊNCIA)
-        const resTriagens = await api.get("/dashboard/triagens/hoje");
+        const resTriagens = await api.get("/triagens/today");
         const triagens = resTriagens.data || [];
+
         const criticas = triagens
-          .filter(t => ["ATENÇÃO", "URGÊNCIA"].includes(t.resultado))
+          .filter(t => t.resultado?.toLowerCase() === "risco alto")
           .slice(0, 5);
-        
+
         setTriagensPendentes(criticas);
-      } catch (err) {
-        console.error("Erro ao carregar dashboard médico", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+        } catch (err) {
+          console.error("Erro ao carregar dashboard médico", err);
+        } finally {
+          setLoading(false);
+        }
+      };
 
     carregarDados();
   }, [navigate]);
@@ -145,28 +148,34 @@ function DashboardMedico() {
           )}
         </div>
 
-        {/* TRIAGENS CRÍTICAS */}
-        <div className="secao alerta">
-          <h2>Triagens Críticas (Atenção/Urgência)</h2>
-          {triagensPendentes.length === 0 ? (
-            <p className="vazio">Nenhuma triagem crítica no momento.</p>
-          ) : (
-            <div className="lista-triagens">
-              {triagensPendentes.map((t) => (
-                <div key={t.id} className={`triagem-card ${t.resultado.toLowerCase()}`}>
-                  <div>
-                    <strong>{t.utente?.nome || "Paciente"}</strong>
-                    <span>{new Date(t.data).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="resultado">
-                    <strong>{t.resultado}</strong>
-                    <p>{t.recomendacao}</p>
-                  </div>
+          {/* TRIAGENS CRÍTICAS */}
+      <div className="secao alerta">
+        <h2>Triagens Críticas (Risco Alto)</h2>
+        {triagensPendentes.length === 0 ? (
+          <p className="vazio">Nenhuma triagem crítica no momento.</p>
+        ) : (
+          <div className="lista-triagens">
+            {triagensPendentes.map((t) => (
+              <div key={t.id} className="triagem-card risco-alto">
+                <div>
+                  <strong>{t.utente?.nome || "Paciente"}</strong>
+                  <span>
+                    {new Date(t.data).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <div className="resultado">
+                  <strong>{t.resultado}</strong>
+                  <p>{t.recomendacao}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       </div>
 
       <div className="acoes-rapidas">

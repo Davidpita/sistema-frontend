@@ -33,7 +33,7 @@ function CriarPrescricao() {
 
     const carregarConsultas = async () => {
       try {
-        const res = await api.get("/dashboard/consultas/hoje");
+        const res = await api.get("/consultas/hoje");
         const todas = res.data.consultas || [];
         const minhas = todas.filter(c => c.profissionalId === usuario.id && c.realizada);
         setConsultas(minhas);

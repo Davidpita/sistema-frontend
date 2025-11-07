@@ -167,3 +167,76 @@ button:disabled {
   background: #fadbd8;
   color: #e74c3c;
 }
+
+
+/* src/pages/Triagem/Triagem.css */
+/* ======================== Tabela de Triagens ======================== */
+.lista-triagens {
+  margin-top: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.lista-triagens h2 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.lista-triagens table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.lista-triagens th, .lista-triagens td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.lista-triagens th {
+  background: #f0f8ff;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.lista-triagens tr:hover {
+  background: #f9f9f9;
+}
+
+.lista-triagens td {
+  color: #34495e;
+}
+
+.lista-triagens td:last-child {
+  display: flex;
+  gap: 10px;
+}
+
+.lista-triagens button {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+.lista-triagens button.edit {
+  background: #3498db;
+  color: white;
+}
+
+.lista-triagens button.delete {
+  background: #e74c3c;
+  color: white;
+}
+
+/* Scroll horizontal em telas pequenas */
+@media (max-width: 768px) {
+  .lista-triagens table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
