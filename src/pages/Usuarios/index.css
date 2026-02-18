@@ -1,5 +1,8 @@
 .usuarios-container {
   padding: 20px;
+  max-width: 1200px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0 auto;
 }
 
 .usuarios-container h1 {
@@ -29,11 +32,14 @@ form input, form select {
   margin: 10px 0;
   border: 1px solid #ddd;
   border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
 }
 
 .actions {
   display: flex;
   gap: 10px;
+  margin-top: 15px;
 }
 
 button {
@@ -41,16 +47,36 @@ button {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
 }
 
-button[type="submit"] {
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
   background: #27ae60;
   color: white;
 }
 
-button[type="button"] {
+.btn-primary:hover:not(:disabled) {
+  background: #219a52;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
   background: #95a5a6;
   color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #7f8c8d;
+  transform: translateY(-2px);
 }
 
 .usuarios-table {
@@ -68,12 +94,43 @@ button[type="button"] {
 .usuarios-table th {
   background: #f8f9fa;
   font-weight: 600;
+  color: #2c3e50;
+}
+
+.actions-header {
+  text-align: center;
+  width: 120px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-edit, .btn-delete {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  min-width: 40px;
+  height: 40px;
 }
 
 .btn-edit {
   background: #f39c12;
   color: white;
-  margin-right: 5px;
+}
+
+.btn-edit:hover {
+  background: #e67e22;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
 }
 
 .btn-delete {
@@ -81,18 +138,84 @@ button[type="button"] {
   color: white;
 }
 
+.btn-delete:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.material-icons {
+  font-size: 18px;
+}
+
 .alert {
   padding: 12px;
   border-radius: 8px;
   margin: 15px 0;
+  font-weight: 500;
 }
 
 .alert.success {
   background: #d5efdf;
   color: #27ae60;
+  border: 1px solid #27ae60;
 }
 
 .alert.error {
   background: #fadbd8;
   color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+/* Badges para os papéis */
+.papel-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.papel-agente {
+  background: #e8f5e8;
+  color: #27ae60;
+}
+
+.papel-enfermeiro {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.papel-medico {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.papel-gestor {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .usuarios-container {
+    padding: 10px;
+  }
+  
+  .form-section, .lista-section {
+    padding: 15px;
+  }
+  
+  .table-actions {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .btn-edit, .btn-delete {
+    width: 100%;
+  }
+  
+  .actions {
+    flex-direction: column;
+  }
 }

@@ -67,10 +67,10 @@ function Utentes() {
 
       if (editando) {
         await api.put(`/utentes/${editando}`, dadosParaEnviar);
-        setSucesso("Utente atualizado!");
+        setSucesso("Utente atualizado com sucesso!");
       } else {
         await api.post("/utentes/", dadosParaEnviar);
-        setSucesso("Utente criado!");
+        setSucesso("Utente criado com sucesso!");
       }
       limparForm();
       carregarUtentes();
@@ -111,14 +111,15 @@ function Utentes() {
     });
     setEditando(utente.id);
   };
+
   const excluirUtente = async (id) => {
     if (!window.confirm("Tem certeza que deseja excluir este utente?")) return;
     try {
       await api.delete(`/utentes/${id}`);
       carregarUtentes();
-      setSucesso("Utente excluído!");
+      setSucesso("Utente excluído com sucesso!");
     } catch (err) {
-      setErro("Erro ao excluir");
+      setErro("Erro ao excluir utente");
     }
   };
 
@@ -128,132 +129,300 @@ function Utentes() {
       u.contacto.includes(busca)
   );
 
+  const getSexoIcon = (sexo) => {
+    return sexo === "M" ? "male" : "female";
+  };
+
+  const getSexoLabel = (sexo) => {
+    return sexo === "M" ? "Masculino" : "Feminino";
+  };
+
   return (
     <div className="utentes-container">
-      <h1>Gerenciar Utentes</h1>
+      <header className="utentes-header">
+        <div className="header-content">
+          <h1>
+            <span className="material-icons">people</span>
+            Gerenciar Utentes
+          </h1>
+        </div>
+      </header>
 
-      <div className="busca-section">
-        <input
-          type="text"
-          placeholder="Buscar por nome ou contacto..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          className="busca-input"
-        />
-      </div>
+      {/* BUSCA */}
+      <section className="busca-section card">
+        <div className="input-with-icon">
+          <span className="material-icons">search</span>
+          <input
+            type="text"
+            placeholder="Buscar utente por nome ou contacto..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="busca-input"
+          />
+        </div>
+      </section>
 
-      <div className="form-section">
-        <h2>{editando ? "Editar" : "Criar"} Utente</h2>
-        {sucesso && <div className="alert success">{sucesso}</div>}
-        {erro && <div className="alert error">{erro}</div>}
+      {/* FORMULÁRIO */}
+      <section className="form-section card">
+        <div className="section-header">
+          <h2>
+            <span className="material-icons">
+              {editando ? "edit" : "person_add"}
+            </span>
+            {editando ? "Editar Utente" : "Cadastrar Novo Utente"}
+          </h2>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-grid">
-            <input
-              placeholder="Nome Completo"
-              value={form.nome}
-              onChange={(e) => setForm({ ...form, nome: e.target.value })}
-              required
-            />
-            <input
-              type="datetime-local"
-              placeholder="Data Nascimento"
-              value={form.dataNascimento}
-              onChange={(e) =>
-                setForm({ ...form, dataNascimento: e.target.value })
-              }
-              required
-            />
-            <select
-              value={form.sexo}
-              onChange={(e) => setForm({ ...form, sexo: e.target.value })}
-            >
-              <option value="M">Masculino</option>
-              <option value="F">Feminino</option>
-            </select>
-            <input
-              placeholder="Contacto (ex: 923456789)"
-              value={form.contacto}
-              onChange={(e) => setForm({ ...form, contacto: e.target.value })}
-              required
-              disabled={editando}
-            />
-
-            <select
-              value={form.idLocal}
-              onChange={(e) => setForm({ ...form, idLocal: e.target.value })}
-              required
-            >
-              <option value="">Selecione uma zona</option>
-              {zonas.map((z) => (
-                <option key={z.id} value={z.id}>
-                  {z.nome}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="password"
-              placeholder={editando ? "Nova senha (opcional)" : "Senha"}
-              value={form.senha}
-              onChange={(e) => setForm({ ...form, senha: e.target.value })}
-              minLength="6"
-            />
-          </div>
-          <div className="actions">
-            <button type="submit" disabled={loading}>
-              {loading ? "Salvando..." : editando ? "Atualizar" : "Criar"}
+        {/* ALERTAS */}
+        {sucesso && (
+          <div className="alert success">
+            <span className="material-icons">check_circle</span>
+            <span className="alert-text">{sucesso}</span>
+            <button onClick={() => setSucesso("")} className="btn-fechar-alerta">
+              <span className="material-icons">close</span>
             </button>
+          </div>
+        )}
+        
+        {erro && (
+          <div className="alert error">
+            <span className="material-icons">error</span>
+            <span className="alert-text">{erro}</span>
+            <button onClick={() => setErro("")} className="btn-fechar-alerta">
+              <span className="material-icons">close</span>
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="utente-form">
+          <div className="form-grid">
+            <div className="form-group">
+              <label>
+                <span className="material-icons">badge</span>
+                Nome Completo
+              </label>
+              <input
+                placeholder="Nome completo do utente"
+                value={form.nome}
+                onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                required
+                className="input-field"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>
+                <span className="material-icons">cake</span>
+                Data de Nascimento
+              </label>
+              <input
+                type="datetime-local"
+                placeholder="Data de Nascimento"
+                value={form.dataNascimento}
+                onChange={(e) =>
+                  setForm({ ...form, dataNascimento: e.target.value })
+                }
+                required
+                className="input-field"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>
+                <span className="material-icons">person</span>
+                Sexo
+              </label>
+              <select
+                value={form.sexo}
+                onChange={(e) => setForm({ ...form, sexo: e.target.value })}
+                className="input-field"
+              >
+                <option value="M">Masculino</option>
+                <option value="F">Feminino</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>
+                <span className="material-icons">phone</span>
+                Contacto
+              </label>
+              <input
+                placeholder="Número de contacto (ex: 923456789)"
+                value={form.contacto}
+                onChange={(e) => setForm({ ...form, contacto: e.target.value })}
+                required
+                disabled={editando}
+                className="input-field"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>
+                <span className="material-icons">location_on</span>
+                Zona
+              </label>
+              <select
+                value={form.idLocal}
+                onChange={(e) => setForm({ ...form, idLocal: e.target.value })}
+                required
+                className="input-field"
+              >
+                <option value="">Selecione uma zona</option>
+                {zonas.map((z) => (
+                  <option key={z.id} value={z.id}>
+                    {z.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>
+                <span className="material-icons">lock</span>
+                {editando ? "Nova Senha" : "Senha"}
+              </label>
+              <input
+                type="password"
+                placeholder={editando ? "Nova senha (opcional)" : "Senha do utente"}
+                value={form.senha}
+                onChange={(e) => setForm({ ...form, senha: e.target.value })}
+                minLength="6"
+                className="input-field"
+                required={!editando}
+              />
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="btn-primary"
+            >
+              {loading ? (
+                <>
+                  <span className="material-icons spinner">refresh</span>
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <span className="material-icons">
+                    {editando ? "save" : "add"}
+                  </span>
+                  {editando ? "Atualizar Utente" : "Criar Utente"}
+                </>
+              )}
+            </button>
+            
             {editando && (
-              <button type="button" onClick={limparForm}>
-                Cancelar
+              <button 
+                type="button" 
+                onClick={limparForm}
+                className="btn-secondary"
+              >
+                <span className="material-icons">cancel</span>
+                Cancelar Edição
               </button>
             )}
           </div>
         </form>
-      </div>
+      </section>
 
-      <div className="lista-section">
-        <h2>Utentes Cadastrados ({utentesFiltrados.length})</h2>
+      {/* LISTA DE UTENTES */}
+      <section className="lista-section card">
+        <div className="section-header">
+          <h2>
+            <span className="material-icons">list_alt</span>
+            Utentes Cadastrados ({utentesFiltrados.length})
+          </h2>
+        </div>
+
         {utentesFiltrados.length === 0 ? (
-          <p>Nenhum utente encontrado.</p>
+          <div className="sem-registros">
+            <span className="material-icons">people_outline</span>
+            <p>Nenhum utente encontrado.</p>
+            {busca && (
+              <p className="busca-vazia">
+                Nenhum resultado para "{busca}"
+              </p>
+            )}
+          </div>
         ) : (
           <div className="utentes-grid">
             {utentesFiltrados.map((u) => (
               <div key={u.id} className="utente-card">
                 <div className="card-header">
-                  <h3>{u.nome}</h3>
-                  <span className={`sexo ${u.sexo}`}>
-                    {u.sexo === "M" ? "👩" : "👨"}
-                  </span>
+                  <div className="utente-info">
+                    <span className={`sexo-icon ${u.sexo}`}>
+                      <span className="material-icons">{getSexoIcon(u.sexo)}</span>
+                    </span>
+                    <div>
+                      <h3>{u.nome}</h3>
+                      <span className="sexo-label">{getSexoLabel(u.sexo)}</span>
+                    </div>
+                  </div>
+                  <div className="card-actions">
+                    <button 
+                      onClick={() => editarUtente(u)} 
+                      className="btn-edit"
+                      title="Editar utente"
+                    >
+                      <span className="material-icons">edit</span>
+                    </button>
+                    <button
+                      onClick={() => excluirUtente(u.id)}
+                      className="btn-delete"
+                      title="Excluir utente"
+                    >
+                      <span className="material-icons">delete</span>
+                    </button>
+                  </div>
                 </div>
+                
                 <div className="card-body">
-                  <p>
-                    <strong>Contact:</strong> {u.contacto}
-                  </p>
-                  <p>
-                    <strong>Local:</strong> {u.localizacao || "Não informado"}
-                  </p>
-                  <p>
-                    <strong>Zona:</strong> {u.zona?.nome || u.idLocal}
-                  </p>
+                  <div className="info-item">
+                    <span className="material-icons">phone</span>
+                    <div>
+                      <span className="info-label">Contacto</span>
+                      <span className="info-value">{u.contacto}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="info-item">
+                    <span className="material-icons">location_on</span>
+                    <div>
+                      <span className="info-label">Localização</span>
+                      <span className="info-value">{u.localizacao || "Não informado"}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="info-item">
+                    <span className="material-icons">map</span>
+                    <div>
+                      <span className="info-label">Zona</span>
+                      <span className="info-value">{u.zona?.nome || u.idLocal || "Não atribuída"}</span>
+                    </div>
+                  </div>
+
+                  {u.dataNascimento && (
+                    <div className="info-item">
+                      <span className="material-icons">cake</span>
+                      <div>
+                        <span className="info-label">Data Nasc.</span>
+                        <span className="info-value">
+                          {new Date(u.dataNascimento).toLocaleDateString('pt-PT')}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="card-actions">
-                  <button onClick={() => editarUtente(u)} className="btn-edit">
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => excluirUtente(u.id)}
-                    className="btn-delete"
-                  >
-                    Excluir
-                  </button>
-                </div>
+
               </div>
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

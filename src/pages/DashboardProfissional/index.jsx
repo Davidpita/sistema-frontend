@@ -31,7 +31,7 @@ function DashboardProfissional() {
     const carregarDados = async () => {
       try {
         // 1. TRIAGENS DE HOJE
-        const resTriagens = await api.get("/triagens/hoje");
+        const resTriagens = await api.get("/triagens/today");
         const triagens = Array.isArray(resTriagens.data) ? resTriagens.data : [];
         
         const minhasTriagens = triagens.filter(t => 
@@ -43,7 +43,7 @@ function DashboardProfissional() {
 
         // 2. LEITURAS CLÍNICAS DE HOJE
         const hoje = new Date().toISOString().split('T')[0];
-        const resLeituras = await api.get("/leituras-clinicas");
+        const resLeituras = await api.get("/leituras");
         const todasLeituras = resLeituras.data || [];
         const minhasLeituras = todasLeituras.filter(l => 
           new Date(l.data).toISOString().split('T')[0] === hoje &&

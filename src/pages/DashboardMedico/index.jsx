@@ -25,59 +25,111 @@ function DashboardMedico() {
     }
 
     setMedico(usuario);
+    carregarDadosDashboard(usuario.id);
+  }, [navigate]);
 
-    const carregarDados = async () => {
-      try {
-        // 1. CONSULTAS DE HOJE
-        const resConsultas = await api.get("/consultas/hoje");
-        const todasConsultas = resConsultas.data.consultas || [];
-        const totalConsultasHoje = resConsultas.data.totalConsultasHoje || todasConsultas.length || 0;
+  const carregarDadosDashboard = async (medicoId) => {
+    try {
+      setLoading(true);
+      
+      // 1. CARREGAR TODAS AS CONSULTAS
+      const resConsultas = await api.get("/consultas");
+      console.log("📦 Resposta completa das consultas:", resConsultas);
+      
+      // Extrai o array de consultas da resposta
+      let todasConsultas = [];
+      if (Array.isArray(resConsultas.data)) {
+        todasConsultas = resConsultas.data;
+      } else if (resConsultas.data.consultas && Array.isArray(resConsultas.data.consultas)) {
+        todasConsultas = resConsultas.data.consultas;
+      } else if (resConsultas.data.data && Array.isArray(resConsultas.data.data)) {
+        todasConsultas = resConsultas.data.data;
+      }
+      
+      console.log("🔍 Todas as consultas:", todasConsultas);
 
-        const minhasConsultas = todasConsultas.filter(
-        c => c.profissionalId === usuario.id
-      );
+      // FILTRO CORRIGIDO: Consultas do médico logado (incluindo profissionalId null para testes)
+      const minhasConsultas = todasConsultas.filter(consulta => {
+        return consulta.profissionalId === medicoId || consulta.profissionalId === null;
+      });
 
-      setConsultasHoje(minhasConsultas);
-      setStats(prev => ({
-        ...prev,
-        consultasHoje: minhasConsultas.length,
-        consultasPendentes: minhasConsultas.filter(c => !c.realizada).length,
+      console.log("🎯 Minhas consultas:", minhasConsultas);
+
+      // CONSULTAS DE HOJE - data atual
+      const hoje = new Date().toISOString().split('T')[0];
+      const consultasDeHoje = minhasConsultas.filter(consulta => {
+        const dataConsulta = new Date(consulta.data).toISOString().split('T')[0];
+        return dataConsulta === hoje;
+      });
+
+      console.log("📅 Consultas de hoje:", consultasDeHoje);
+
+      setConsultasHoje(consultasDeHoje);
+      
+      // ATUALIZAR ESTATÍSTICAS
+      setStats({
+        consultasHoje: consultasDeHoje.length,
+        consultasPendentes: consultasDeHoje.filter(c => !c.realizada).length,
         pacientesAtendidos: minhasConsultas.filter(c => c.realizada).length,
-      }));
+      });
 
+      // 2. TRIAGENS - Carregar todas e filtrar
+      try {
+        const resTriagens = await api.get("/triagens");
+        console.log("📋 Resposta das triagens:", resTriagens);
+        
+        let todasTriagens = [];
+        if (Array.isArray(resTriagens.data)) {
+          todasTriagens = resTriagens.data;
+        } else if (resTriagens.data.triagens && Array.isArray(resTriagens.data.triagens)) {
+          todasTriagens = resTriagens.data.triagens;
+        } else if (resTriagens.data.data && Array.isArray(resTriagens.data.data)) {
+          todasTriagens = resTriagens.data.data;
+        }
 
-        // 2. TRIAGENS RECENTES (últimas 5 com resultado ATENÇÃO/URGÊNCIA)
-        const resTriagens = await api.get("/triagens/today");
-        const triagens = resTriagens.data || [];
-
-        const criticas = triagens
-          .filter(t => t.resultado?.toLowerCase() === "risco alto")
+        // Filtrar triagens críticas (risco alto)
+        const triagensCriticas = todasTriagens
+          .filter(t => t.resultado && (
+            t.resultado.toLowerCase().includes('risco alto') || 
+            t.resultado.toLowerCase().includes('urgente') ||
+            t.resultado.toLowerCase().includes('crítico')
+          ))
           .slice(0, 5);
 
-        setTriagensPendentes(criticas);
-        } catch (err) {
-          console.error("Erro ao carregar dashboard médico", err);
-        } finally {
-          setLoading(false);
-        }
-      };
+        console.log("🚨 Triagens críticas:", triagensCriticas);
+        setTriagensPendentes(triagensCriticas);
+        
+      } catch (triagemError) {
+        console.warn("⚠️ Erro ao carregar triagens:", triagemError);
+        setTriagensPendentes([]);
+      }
 
-    carregarDados();
-  }, [navigate]);
+    } catch (err) {
+      console.error("❌ Erro ao carregar dashboard médico", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const marcarComoRealizada = async (id) => {
     try {
       await api.put(`/consultas/${id}/realizada`);
+      
+      // Atualizar estado local
       setConsultasHoje(prev => 
         prev.map(c => c.id === id ? { ...c, realizada: true } : c)
       );
+      
+      // Atualizar estatísticas
       setStats(prev => ({
         ...prev,
         consultasPendentes: prev.consultasPendentes - 1,
         pacientesAtendidos: prev.pacientesAtendidos + 1,
       }));
+      
     } catch (err) {
-      alert("Erro ao marcar consulta");
+      console.error("Erro ao marcar consulta:", err);
+      alert("Erro ao marcar consulta como realizada");
     }
   };
 
@@ -119,7 +171,6 @@ function DashboardMedico() {
                 <div key={c.id} className={`consulta-card ${c.realizada ? "realizada" : ""}`}>
                   <div className="info-paciente">
                     <strong>{c.utente.nome}</strong>
-                    <span>{c.utente.contacto}</span>
                   </div>
                   <div className="detalhes">
                     <span className="tipo">{c.tipo}</span>
@@ -148,34 +199,33 @@ function DashboardMedico() {
           )}
         </div>
 
-          {/* TRIAGENS CRÍTICAS */}
-      <div className="secao alerta">
-        <h2>Triagens Críticas (Risco Alto)</h2>
-        {triagensPendentes.length === 0 ? (
-          <p className="vazio">Nenhuma triagem crítica no momento.</p>
-        ) : (
-          <div className="lista-triagens">
-            {triagensPendentes.map((t) => (
-              <div key={t.id} className="triagem-card risco-alto">
-                <div>
-                  <strong>{t.utente?.nome || "Paciente"}</strong>
-                  <span>
-                    {new Date(t.data).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
+        {/* TRIAGENS CRÍTICAS */}
+        <div className="secao alerta">
+          <h2>Triagens Críticas (Risco Alto)</h2>
+          {triagensPendentes.length === 0 ? (
+            <p className="vazio">Nenhuma triagem crítica no momento.</p>
+          ) : (
+            <div className="lista-triagens">
+              {triagensPendentes.map((t) => (
+                <div key={t.id} className="triagem-card risco-alto">
+                  <div>
+                    <strong>{t.utente?.nome || "Paciente"}</strong>
+                    <span>
+                      {new Date(t.data).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <div className="resultado">
+                    <strong>{t.resultado}</strong>
+                    <p>{t.recomendacao}</p>
+                  </div>
                 </div>
-                <div className="resultado">
-                  <strong>{t.resultado}</strong>
-                  <p>{t.recomendacao}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="acoes-rapidas">

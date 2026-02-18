@@ -37,7 +37,7 @@ function Usuarios() {
         await api.put(`/usuarios/${editando}`, form);
         setSucesso('Usuário atualizado!');
       } else {
-        await api.post('/usuarios/criar', form);
+        await api.post('/usuarios', form);
         setSucesso('Usuário criado!');
       }
       setForm({ nome: '', email: '', senha: '', papel: 'agente' });
@@ -107,11 +107,13 @@ function Usuarios() {
             <option value="gestor">Gestor</option>
           </select>
           <div className="actions">
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={loading} className="btn-primary">
+              <span className="material-icons">{loading ? 'hourglass_empty' : editando ? 'update' : 'add'}</span>
               {loading ? 'Salvando...' : editando ? 'Atualizar' : 'Criar'}
             </button>
             {editando && (
-              <button type="button" onClick={() => { setEditando(null); setForm({ nome: '', email: '', senha: '', papel: 'agente' }); }}>
+              <button type="button" onClick={() => { setEditando(null); setForm({ nome: '', email: '', senha: '', papel: 'agente' }); }} className="btn-secondary">
+                <span className="material-icons">cancel</span>
                 Cancelar
               </button>
             )}
@@ -130,7 +132,7 @@ function Usuarios() {
                 <th>Nome</th>
                 <th>Email</th>
                 <th>Papel</th>
-                <th>Ações</th>
+                <th className="actions-header">Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -138,10 +140,28 @@ function Usuarios() {
                 <tr key={u.id}>
                   <td>{u.nome}</td>
                   <td>{u.email}</td>
-                  <td>{u.papel}</td>
                   <td>
-                    <button onClick={() => editarUsuario(u)} className="btn-edit">Editar</button>
-                    <button onClick={() => excluirUsuario(u.id)} className="btn-delete">Excluir</button>
+                    <span className={`papel-badge papel-${u.papel}`}>
+                      {u.papel}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="table-actions">
+                      <button 
+                        onClick={() => editarUsuario(u)} 
+                        className="btn-edit" 
+                        title="Editar usuário"
+                      >
+                        <span className="material-icons">edit</span>
+                      </button>
+                      <button 
+                        onClick={() => excluirUsuario(u.id)} 
+                        className="btn-delete" 
+                        title="Excluir usuário"
+                      >
+                        <span className="material-icons">delete</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
