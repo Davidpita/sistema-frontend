@@ -2,7 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { logout, getPapel } from "../../utils/auth";
 import { ChartBar, Users, User, Clipboard, Calendar, HeartPulse, MapPin, FileText, Pill } from "lucide-react";
-import "./Sidebar.css";
+import "./SideBar.css";
 
 function Sidebar() {
   const location = useLocation();
